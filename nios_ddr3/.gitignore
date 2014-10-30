@@ -1,2 +1,8 @@
 db
 .qsys_edit
+output_files
+bemicro_cv_ddr3_control_p0_summary.csv
+bemicro_cv.qws
+c5_pin_model_dump.txt
+PLLJ_PLLSPE_INFO.txt
+incremental_db
