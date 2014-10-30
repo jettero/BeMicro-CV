@@ -1,4 +1,4 @@
-# (C) 2001-2013 Altera Corporation. All rights reserved.
+# (C) 2001-2014 Altera Corporation. All rights reserved.
 # Your use of Altera Corporation's design tools, logic functions and other 
 # software and tools, and its AMPP partner logic functions, and any output 
 # files any of the foregoing (including device programming or simulation 
@@ -110,12 +110,12 @@ set t(wru_output_max_delay_internal) [expr $t(WL_DCD) + $t(WL_JITTER)*$t(WL_JITT
 set data_output_max_delay [ bemicro_cv_ddr3_control_p0_round_3dp [ expr $t(wru_output_max_delay_external) + $t(wru_output_max_delay_internal)]]
 
 # Maximum delay on data input pins
-set t(rdu_input_max_delay_external) [expr $t(DQSQ) + $board(intra_DQS_group_skew) + $board(DQ_DQS_skew)]
+set t(rdu_input_max_delay_external) [expr $t(DQSQ) + $board(intra_DQS_group_skew) + $board(DQ_DQS_skew) + $ISI(READ_DQ)/2 + $ISI(READ_DQS)/2]
 set t(rdu_input_max_delay_internal) [expr $DQSpathjitter*$DQSpathjitter_setup_prop + $SSN(rel_pushout_i)]
 set data_input_max_delay [ bemicro_cv_ddr3_control_p0_round_3dp [ expr $t(rdu_input_max_delay_external) + $t(rdu_input_max_delay_internal) ]]
 
 # Minimum delay on data input pins
-set t(rdu_input_min_delay_external) [expr $board(intra_DQS_group_skew) - $board(DQ_DQS_skew)]
+set t(rdu_input_min_delay_external) [expr $board(intra_DQS_group_skew) - $board(DQ_DQS_skew) + $ISI(READ_DQ)/2 + $ISI(READ_DQS)/2]
 set t(rdu_input_min_delay_internal) [expr $t(DCD) + $DQSpathjitter*(1.0-$DQSpathjitter_setup_prop) + $SSN(rel_pullin_i)]
 set data_input_min_delay [ bemicro_cv_ddr3_control_p0_round_3dp [ expr - $t(rdu_input_min_delay_external) - $t(rdu_input_min_delay_internal) ]]
 
@@ -199,6 +199,7 @@ foreach { inst } $instances {
 	set pll_dq_write_clock $pins(pll_dq_write_clock)
 	set pll_ck_clock $pins(pll_ck_clock)
 	set pll_write_clock $pins(pll_write_clock)
+	set pll_afi_half_clock $pins(pll_afi_half_clock)
 	set pll_avl_clock $pins(pll_avl_clock)
 	set pll_avl_phy_clock $pins(pll_avl_phy_clock)
 	set pll_config_clock $pins(pll_config_clock)
@@ -333,6 +334,14 @@ foreach { inst } $instances {
 		-phase $::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(PLL_CONFIG_CLK) ]	
 
 
+	# AFI-divided-by-2 clock
+	set local_pll_afi_half_clk [ bemicro_cv_ddr3_control_p0_get_or_add_clock_vseries \
+		-target $pll_afi_half_clock \
+		-suffix "afi_half_clk" \
+		-source $pll_ref_clock \
+		-multiply_by $::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_AFI_HALF_CLK) \
+		-divide_by $::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_AFI_HALF_CLK) \
+		-phase $::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(PLL_AFI_HALF_CLK) ]
 
 	# Pulse-generator used by DQS tracking
 	set local_sampling_clock "${inst}|bemicro_cv_ddr3_control_p0_sampling_clock"
@@ -369,11 +378,13 @@ foreach { inst } $instances {
 
 	# This is the CK clock
 	foreach { ck_pin } $ck_pins {
+	set_clock_uncertainty -to [ get_clocks $ck_pin ] $t(WL_JITTER)
 		create_generated_clock -multiply_by 1 -source $pll_write_clock -master_clock "$local_pll_write_clk" $ck_pin -name $ck_pin
 	}
 
 	# This is the CK#clock
 	foreach { ckn_pin } $ckn_pins {
+	set_clock_uncertainty -to [ get_clocks $ck_pin ] $t(WL_JITTER)
 		create_generated_clock -multiply_by 1 -invert -source $pll_write_clock -master_clock "$local_pll_write_clk" $ckn_pin -name $ckn_pin
 	}
 	
@@ -516,7 +527,7 @@ foreach { inst } $instances {
 					set_output_delay -min [bemicro_cv_ddr3_control_p0_round_3dp [expr {$ac_min_delay + $t(CK)/2}]] -clock [get_clocks $ck_pin] $ac_port -add_delay
 
 					# Specifies the maximum delay difference between the DQS pin and the address/control pins:
-					set_output_delay -max [bemicro_cv_ddr3_control_p0_round_3dp [expr {$ac_min_delay + $t(CK)/2}]] -clock [get_clocks $ck_pin] $ac_port -add_delay
+					set_output_delay -max [bemicro_cv_ddr3_control_p0_round_3dp [expr {$ac_max_delay + $t(CK)/2}]] -clock [get_clocks $ck_pin] $ac_port -add_delay
 				}
 			}
 		}
@@ -548,6 +559,7 @@ foreach { inst } $instances {
 
 
 
+	set read_fifo_read_dff ${prefix}|*p0|*altdq_dqs2_inst|*read_fifo~OUTPUT_DFF_*
 	set read_fifo_write_address_dff ${prefix}|*p0|*altdq_dqs2_inst|*read_fifo~WRITE_ADDRESS_DFF
 	set read_fifo_read_address_dff ${prefix}|*p0|*altdq_dqs2_inst|*read_fifo~READ_ADDRESS_DFF
 	set lfifo_in_read_en_dff ${prefix}|*p0|*lfifo~LFIFO_IN_READ_EN_DFF
@@ -614,7 +626,6 @@ foreach { inst } $instances {
 
 		set_false_path -from [get_clocks $local_pll_avl_phy_clk] -to [get_clocks $local_pll_write_clk]
 
-
 	}
 
 
@@ -651,10 +662,14 @@ foreach { inst } $instances {
 	# The paths between DQS_ENA_CLK and DQS_IN are calibrated, so they must not be analyzed
 	set_false_path -from [get_clocks $local_pll_write_clk] -to [get_clocks {*_IN}]
 
+	# Cut paths between the afi_half and avl clocks
+	set_false_path -from [get_clocks $local_pll_avl_clock] -to [get_clocks $local_pll_afi_half_clk]
+	set_false_path -from [get_clocks $local_pll_afi_half_clk] -to [get_clocks $local_pll_avl_clock]
 
 
 	# The following registers serve as anchors for the pin_map.tcl
 	# script and are not used by the IP during memory operation
+	set_false_path -from $pins(afi_half_ck_pins) -to $pins(afi_half_ck_pins)
 
 	# Cut internal calibrated paths
 	set dqs_delay_chain_pst_dff ${prefix}|*p0|*altdq_dqs2_inst|dqs_delay_chain~POSTAMBLE_DFF
@@ -669,7 +684,7 @@ foreach { inst } $instances {
 	# -                            - #
 	# ------------------------------ #
 	if {$fit_flow} {
-		set_min_delay -from {altera_reserved_tck} -to {altera_reserved_tck} 0.500
+	
 
 	if {[get_collection_size [get_registers -nowarn $pins(avl_phy_ck_pins)]] > 0} {
 		set_clock_uncertainty -from [get_clocks $local_pll_afi_clk] -to [get_clocks $local_pll_avl_phy_clk] -add -setup 0.300

@@ -1,4 +1,4 @@
-// (C) 2001-2013 Altera Corporation. All rights reserved.
+// (C) 2001-2014 Altera Corporation. All rights reserved.
 // Your use of Altera Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
 // files any of the foregoing (including device programming or simulation 
@@ -150,8 +150,8 @@ parameter ALTERA_ALTDQ_DQS2_FAST_SIM_MODEL = "";
 	defparam altdq_dqs2_inst.USE_HALF_RATE_OUTPUT = "true";
 	defparam altdq_dqs2_inst.DIFFERENTIAL_CAPTURE_STROBE = "true";
 	defparam altdq_dqs2_inst.SEPARATE_CAPTURE_STROBE = "false";
-	defparam altdq_dqs2_inst.INPUT_FREQ = 300.0;
-	defparam altdq_dqs2_inst.INPUT_FREQ_PS = "3333 ps";
+	defparam altdq_dqs2_inst.INPUT_FREQ = 600.0;
+	defparam altdq_dqs2_inst.INPUT_FREQ_PS = "1667 ps";
 	defparam altdq_dqs2_inst.DELAY_CHAIN_BUFFER_MODE = "high";
 	defparam altdq_dqs2_inst.DQS_PHASE_SETTING = 2;
 	defparam altdq_dqs2_inst.DQS_PHASE_SHIFT = 9000;
@@ -176,11 +176,12 @@ parameter ALTERA_ALTDQ_DQS2_FAST_SIM_MODEL = "";
 	defparam altdq_dqs2_inst.USE_OCT_ENA_IN_FOR_OCT = "true";
 	defparam altdq_dqs2_inst.PREAMBLE_TYPE = "high";
 	defparam altdq_dqs2_inst.EMIF_UNALIGNED_PREAMBLE_SUPPORT = "false";
+	defparam altdq_dqs2_inst.EMIF_BYPASS_OCT_DDIO = "true";
 	defparam altdq_dqs2_inst.USE_OFFSET_CTRL = "false";
 	defparam altdq_dqs2_inst.HR_DDIO_OUT_HAS_THREE_REGS = "false";
 	defparam altdq_dqs2_inst.DQS_ENABLE_PHASECTRL = "true";
 	defparam altdq_dqs2_inst.USE_2X_FF = "false";
-	defparam altdq_dqs2_inst.DLL_USE_2X_CLK = "false";
+	defparam altdq_dqs2_inst.DLL_USE_2X_CLK = "true";
 	defparam altdq_dqs2_inst.USE_DQS_TRACKING = "false";
 	defparam altdq_dqs2_inst.USE_HARD_FIFOS = "true";
 	defparam altdq_dqs2_inst.USE_DQSIN_FOR_VFIFO_READ = "false";

@@ -1,4 +1,4 @@
-# (C) 2001-2013 Altera Corporation. All rights reserved.
+# (C) 2001-2014 Altera Corporation. All rights reserved.
 # Your use of Altera Corporation's design tools, logic functions and other 
 # software and tools, and its AMPP partner logic functions, and any output 
 # files any of the foregoing (including device programming or simulation 
@@ -123,7 +123,7 @@ if { ![info exists quartus(nameofexecutable)] || ($quartus(nameofexecutable) != 
 		return 1
 	}
 
-	catch { exec $cmd -t [ info script ] $project_name } output
+	set output [ exec $cmd -t [ info script ] $project_name ]
 
 	foreach line [split $output \n] {
 		set type info
@@ -159,6 +159,27 @@ source "$script_dir/bemicro_cv_ddr3_control_p0_parameters.tcl"
 source "$script_dir/bemicro_cv_ddr3_control_p0_pin_map.tcl"
 
 set family_name [string tolower [regsub -all " +" [get_global_assignment -name FAMILY] ""]]
+
+#######################################
+# Check if user is using a SOC Device #
+#######################################
+set device_name [string tolower [regsub -all " +" [get_global_assignment -name DEVICE] ""]]
+set is_av_soc_device 0
+set is_speedgrade_i5 0
+set is_speedgrade_c5 0
+set soc_device_regexp "5as"
+set i5_regexp "i5"
+set c5_regexp "c5"
+
+if {[regexp $soc_device_regexp $device_name]} {
+   set is_av_soc_device 1
+}
+
+if {[regexp $i5_regexp $device_name]} {
+   set is_speedgrade_i5 1
+} elseif {[regexp $c5_regexp $device_name]} {
+   set is_speedgrade_c5 1
+}
 
 ##############################
 # Clean up stale assignments #
@@ -197,6 +218,10 @@ foreach inst $instances {
 	}
 	array set pins $ddr_db($inst)
 
+   if {$is_av_soc_device} {
+      set_global_assignment -name EMIF_SOC_PHYCLK_ADVANCE_MODELING ON
+	} 
+
 	bemicro_cv_ddr3_control_p0_get_rzq_pins $inst all_rzq_pins
 	# Set rzq pin I/O standard
 	foreach rzq_pin $all_rzq_pins {
@@ -215,12 +240,25 @@ foreach inst $instances {
       set_instance_assignment -name IO_STANDARD "DIFFERENTIAL $::GLOBAL_bemicro_cv_ddr3_control_p0_io_standard_differential" -to $dqs_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
       set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to $dqs_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
       set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to $dqs_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+		set_instance_assignment -name D5_DELAY 4 -to $dqs_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+		set_instance_assignment -name D6_DELAY 0 -to $dqs_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
     }
 
     foreach ck_pin [ concat $pins(ck_pins) $pins(ckn_pins) ] {
       set_instance_assignment -name IO_STANDARD "DIFFERENTIAL $::GLOBAL_bemicro_cv_ddr3_control_p0_io_standard_differential" -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
       set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
-	  set_instance_assignment -name D5_DELAY 2 -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+
+	  if {$is_av_soc_device} {
+        if {$is_speedgrade_i5} {
+            set_instance_assignment -name D5_DELAY 5 -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+         } elseif {$is_speedgrade_c5} {
+            set_instance_assignment -name D5_DELAY 10 -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+         } else {
+            set_instance_assignment -name D5_DELAY 8 -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+         }
+	  } else {
+	     set_instance_assignment -name D5_DELAY 2 -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+	  } 
     }
 
     foreach ac_pin $pins(ac_wo_reset_pins) {
@@ -234,7 +272,7 @@ foreach inst $instances {
       set_instance_assignment -name BOARD_MODEL_NEAR_PULLUP_R OPEN -to $reset_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
       set_instance_assignment -name BOARD_MODEL_FAR_PULLDOWN_R OPEN -to $reset_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
       set_instance_assignment -name BOARD_MODEL_NEAR_PULLDOWN_R OPEN -to $reset_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
-      set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to $reset_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+      set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to $reset_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
     } 
 
     foreach dm_pin $pins(dm_pins) {
@@ -254,12 +292,25 @@ foreach inst $instances {
       set_instance_assignment -name IO_STANDARD "DIFFERENTIAL $::GLOBAL_bemicro_cv_ddr3_control_p0_io_standard_differential CLASS I" -to $dqs_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
       set_instance_assignment -name INPUT_TERMINATION "PARALLEL 50 OHM WITH CALIBRATION" -to $dqs_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
       set_instance_assignment -name OUTPUT_TERMINATION "SERIES 50 OHM WITH CALIBRATION" -to $dqs_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+		set_instance_assignment -name D5_DELAY 4 -to $dqs_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+		set_instance_assignment -name D6_DELAY 0 -to $dqs_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
     }
 
     foreach ck_pin [ concat $pins(ck_pins) $pins(ckn_pins) ] {
       set_instance_assignment -name IO_STANDARD "DIFFERENTIAL $::GLOBAL_bemicro_cv_ddr3_control_p0_io_standard_differential CLASS I" -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
       set_instance_assignment -name OUTPUT_TERMINATION "SERIES 50 OHM WITHOUT CALIBRATION" -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
-      set_instance_assignment -name D5_DELAY 2 -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+
+      if {$is_av_soc_device} {
+        if {$is_speedgrade_i5} {
+            set_instance_assignment -name D5_DELAY 5 -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+         } elseif {$is_speedgrade_c5} {
+            set_instance_assignment -name D5_DELAY 10 -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+         } else {
+            set_instance_assignment -name D5_DELAY 8 -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+         }
+	  } else {
+	     set_instance_assignment -name D5_DELAY 2 -to $ck_pin -tag __$::GLOBAL_bemicro_cv_ddr3_control_p0_corename
+	  } 
     }
 
     foreach ac_pin $pins(ac_wo_reset_pins) {
@@ -315,7 +366,7 @@ foreach inst $instances {
 
 	set qr_related_clks 0
 
-	set dr_clk 0
+	set dr_clk 1
 
 	# Create the global and regional clocks
 
@@ -366,6 +417,7 @@ if { [ llength $quartus(args) ] > 1 } {
 	}
 }
 
+set_global_assignment -name USE_DLL_FREQUENCY_FOR_DQS_DELAY_CHAIN ON
 set_global_assignment -name UNIPHY_SEQUENCER_DQS_CONFIG_ENABLE ON
 set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING ON
 

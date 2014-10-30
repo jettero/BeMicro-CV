@@ -22,10 +22,10 @@ module  bemicro_cv_syspll(
 		.reference_clock_frequency("50.0 MHz"),
 		.operation_mode("normal"),
 		.number_of_clocks(2),
-		.output_clock_frequency0("80.0 MHz"),
+		.output_clock_frequency0("80.000000 MHz"),
 		.phase_shift0("0 ps"),
 		.duty_cycle0(50),
-		.output_clock_frequency1("80.0 MHz"),
+		.output_clock_frequency1("80.000000 MHz"),
 		.phase_shift1("0 ps"),
 		.duty_cycle1(50),
 		.output_clock_frequency2("0 MHz"),
@@ -79,11 +79,11 @@ module  bemicro_cv_syspll(
 		.pll_type("General"),
 		.pll_subtype("General")
 	) altera_pll_i (
+		.rst	(rst),
 		.outclk	({outclk_1, outclk_0}),
 		.locked	(locked),
 		.fboutclk	( ),
 		.fbclk	(1'b0),
-		.rst	(rst),
 		.refclk	(refclk)
 	);
 endmodule

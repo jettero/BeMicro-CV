@@ -1,4 +1,4 @@
-# (C) 2001-2013 Altera Corporation. All rights reserved.
+# (C) 2001-2014 Altera Corporation. All rights reserved.
 # Your use of Altera Corporation's design tools, logic functions and other 
 # software and tools, and its AMPP partner logic functions, and any output 
 # files any of the foregoing (including device programming or simulation 
@@ -340,15 +340,15 @@ proc bemicro_cv_ddr3_control_p0_perform_flexible_write_launch_timing_analysis {o
 
 						# Remember the largest shifts in either direction
 						if {[info exist max_shift]} {
-							if {[expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2 + $extra_pessimism/2] > $max_shift} {
-								set max_shift [expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2 + $extra_pessimism/2]
+							if {[expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2] > $max_shift} {
+								set max_shift [expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2]
 							}
-							if {[expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2 - $extra_pessimism/2] < $min_shift} {
-								set min_shift [expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2 - $extra_pessimism/2]
+							if {[expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2] < $min_shift} {
+								set min_shift [expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2]
 							}
 						} else {
-							set max_shift [expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2 + $extra_pessimism/2]
-							set min_shift [expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2 - $extra_pessimism/2]
+							set max_shift [expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2]
+							set min_shift [expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2]
 						}
 					}
 				} else {
@@ -719,8 +719,13 @@ proc bemicro_cv_ddr3_control_p0_perform_flexible_read_capture_timing_analysis {o
 	set default_hold_slack  1000000000	
 		
 	# Find quiet jitter values during calibration
+	if {$family == "arria v"} {
+		set quiet_clk_jitter_proportion 0.25
+	} else {
+		set quiet_clk_jitter_proportion 0.5
+	}
 	set quiet_setup_jitter [expr 0.8*$DQSpathjitter*$DQSpathjitter_setup_prop]
-	set quiet_hold_jitter  [expr 0.8*$DQSpathjitter*(1-$DQSpathjitter_setup_prop) + 0.8*$tJITper/2]
+	set quiet_hold_jitter  [expr 0.8*$DQSpathjitter*(1-$DQSpathjitter_setup_prop) + $quiet_clk_jitter_proportion*$tJITper/2]		
 	set max_read_deskew_setup [expr $IP(read_deskew_range_setup)*$IP(quantization_T1)]
 	set max_read_deskew_hold  [expr $IP(read_deskew_range_hold)*$IP(quantization_T1)]
 		
@@ -845,15 +850,15 @@ proc bemicro_cv_ddr3_control_p0_perform_flexible_read_capture_timing_analysis {o
 						
 						# Remember the largest shifts in either direction
 						if {[info exist max_shift]} {
-							if {[expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2  + $extra_pessimism/2] > $max_shift} {
-								set max_shift [expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2  + $extra_pessimism/2]
+							if {[expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2] > $max_shift} {
+								set max_shift [expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2]
 							}
-							if {[expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2  - $extra_pessimism/2] < $min_shift} {
-								set min_shift [expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2 - $extra_pessimism/2]
+							if {[expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2] < $min_shift} {
+								set min_shift [expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2]
 							}
 						} else {
-							set max_shift [expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2 + $extra_pessimism/2]
-							set min_shift [expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2 - $extra_pessimism/2]
+							set max_shift [expr $shift_setup_slack + $DQSpath_pessimism/2 + $DQpath_pessimism/2]
+							set min_shift [expr $shift_setup_slack - $DQSpath_pessimism/2 - $DQpath_pessimism/2]
 						}
 					}
 				} else {
@@ -948,11 +953,19 @@ proc bemicro_cv_ddr3_control_p0_perform_flexible_read_capture_timing_analysis {o
 		lappend rc_summary [list "  Quantization error" [bemicro_cv_ddr3_control_p0_format_3dp [expr 0-$t1_quantization]] [bemicro_cv_ddr3_control_p0_format_3dp [expr 0-$t1_quantization]]]
 		
 		# Consider variation in the delay chains used during dynamic deksew
-		set offset_from_90 [expr abs(90-$dqs_phase)/360.0*$period]
+		set dqs_period [ bemicro_cv_ddr3_control_p0_get_dqs_period $pins(dqs_pins) ]
+		set offset_from_90 [expr abs(90/360.0*$period - $dqs_phase/360.0*$dqs_period)]
 		if {$IP(num_ranks) == 1} {
-			set t1_variation [expr [min [expr $offset_from_90 + [max [expr $MP(DQSQ)*$t(DQSQ)] [expr $MP(QH_time)*(0.5*$period - $t(QH_time))]] + 2*$board(intra_DQS_group_skew) + $max_package_skew + $fpga(tDQS_PSERR)] [max $max_read_deskew_setup $max_read_deskew_hold]]*2*$t1_vt_variation_percent]
+			set t1_variation [expr [min [expr $offset_from_90 + [max [expr $MP(DQSQ)*$t(DQSQ)] [expr $MP(QH_time)*(0.5*$period - $t(QH_time))]] + 2*$board(intra_DQS_group_skew) + $max_package_skew + $fpga(tDQS_PSERR)] [max $max_read_deskew_setup $max_read_deskew_hold]]*2*$t1_vt_variation_percent*0.75]
 		} else {
-			set t1_variation [expr [min [expr $offset_from_90 + 2*$board(intra_DQS_group_skew) + $max_package_skew + $fpga(tDQS_PSERR)] [max $max_read_deskew_setup $max_read_deskew_hold]]*2*$t1_vt_variation_percent]
+			set t1_variation [expr [min [expr $offset_from_90 + 2*$board(intra_DQS_group_skew) + $max_package_skew + $fpga(tDQS_PSERR)] [max $max_read_deskew_setup $max_read_deskew_hold]]*2*$t1_vt_variation_percent*0.75]
+		}
+		if {($dqs_period < 1.250) && ($family == "arria v")} {
+			set speedgrade [string trim [string range [get_speedgrade_string] 0 0]]
+			if {$speedgrade == 6} {
+				set further_dqs_pserr 0.025
+				set t1_variation [expr $t1_variation + $further_dqs_pserr]
+			}
 		}
 		set setup_slack [expr $setup_slack - $t1_variation]
 		set hold_slack  [expr $hold_slack - $t1_variation]	
@@ -1676,7 +1689,15 @@ proc bemicro_cv_ddr3_control_p0_perform_resync_timing_analysis {opcs opcname ins
 		regexp {read_buffering\[(\d+)\]\.read_subgroup} $reg_name match dqs_group_number
 
 		set dqs_pin [lindex $pins(dqs_pins) $dqs_group_number]
-
+      if {!([info exists max_DQS_to_fifo_paths_max($dqs_pin)] &&
+		     [info exists min_DQS_to_fifo_paths_min($dqs_pin)] &&
+		     [info exists max_fifo_to_rd_clk_domain_paths_max($reg_name_fifo_data_rd_clk_domain)] &&
+		     [info exists min_fifo_to_rd_clk_domain_paths_min($reg_name_fifo_data_rd_clk_domain)] &&
+		     [info exists max_rd_address_to_rd_data_paths_max($reg_name)] &&
+		     [info exists min_rd_address_to_rd_data_paths_min($reg_name)])} {
+         post_message -type error "Paths not found for resync analysis."
+         return 1
+      }
 		set max_DQS_to_fifo $max_DQS_to_fifo_paths_max($dqs_pin)
 		set min_DQS_to_fifo $min_DQS_to_fifo_paths_min($dqs_pin)
 		set max_fifo_to_rd_clk_domain $max_fifo_to_rd_clk_domain_paths_max($reg_name)
@@ -1788,10 +1809,11 @@ proc bemicro_cv_ddr3_control_p0_perform_flexible_postamble_timing_analysis {opcs
 	
 	set coarse_delay [expr $t(CK)/$dll_length]	
 	set dqsenableextend_regs [list *dq_ddio[*].ubidir_dq_dqs|*|dqs_enable_ctrl~DFFEXTENDDQSENABLE *dq_ddio[*].ubidir_dq_dqs|*|dqs_enable_ctrl~DQSENABLEOUT_DFF]
-	
 	# Clock out to DQS path coming back into the FPGA
 	set mem_clock_delay_max [bemicro_cv_ddr3_control_p0_max_in_collection [get_path -rise_from $pins(pll_write_clock) -rise_to $pins(ck_pins)] "arrival_time"]
 	set mem_clock_delay_min [bemicro_cv_ddr3_control_p0_min_in_collection [get_path -rise_from $pins(pll_write_clock) -rise_to $pins(ck_pins) -min_path] "arrival_time"]
+
+
 	set dqs_delay_max  [bemicro_cv_ddr3_control_p0_max_in_collection [get_path -rise_from $pins(dqs_pins) -fall_to *POSTAMBLE_DFF] "arrival_time"]
 	set dqs_delay_min  [bemicro_cv_ddr3_control_p0_min_in_collection [get_path -rise_from $pins(dqs_pins) -fall_to *POSTAMBLE_DFF -min_path] "arrival_time"]	
 	set ck_pin_buffer_delay [bemicro_cv_ddr3_control_p0_round_3dp [expr [bemicro_cv_ddr3_control_p0_get_min_aiot_delay [lindex $pins(ck_pins) 0]] * 1e9]]
@@ -1804,7 +1826,6 @@ proc bemicro_cv_ddr3_control_p0_perform_flexible_postamble_timing_analysis {opcs
 	set clock_delay_min [bemicro_cv_ddr3_control_p0_min_in_collection [get_path -rise_from $pins(pll_write_clock) -rise_to $dqsenableextend_regs -min_path] "arrival_time"]
 	set t11_delay_max [bemicro_cv_ddr3_control_p0_max_in_collection [get_path -rise_from $dqsenableextend_regs -fall_to *POSTAMBLE_DFF] "arrival_time"]
 	set t11_delay_min [bemicro_cv_ddr3_control_p0_min_in_collection [get_path -rise_from $dqsenableextend_regs -fall_to *POSTAMBLE_DFF -min_path] "arrival_time"]
-
 
 	set t11_setting_delay_max_base [expr [get_integer_node_delay -integer 0 -parameters {DQS_ENABLE RC_RISE RC_RISE} -src DELAYCHAIN_T11 -in_fitter]/1000.0]
 	set t11_setting_delay_max   [expr [get_integer_node_delay -integer 15 -parameters {DQS_ENABLE RC_RISE RC_RISE} -src DELAYCHAIN_T11 -in_fitter]/1000.0]
@@ -1880,7 +1901,19 @@ proc bemicro_cv_ddr3_control_p0_perform_flexible_postamble_timing_analysis {opcs
 	
 	set setup_slack [expr $setup_slack - $ldc_tracking_error/2 - $ldc_absolute_error/2]
 	set hold_slack  [expr $hold_slack  - $ldc_tracking_error/2 - $ldc_absolute_error/2]	
-	
+
+	##############################
+	# Effects due to 2x DLL clock
+	##############################
+	set dtaps_per_ptap [expr ($period/8.0)/0.025 - 1]
+	set t11_max_delay_pvt_min   [expr [get_integer_node_delay -integer $dtaps_per_ptap -parameters {DQS_ENABLE MIN RC_RISE RC_RISE} -src DELAYCHAIN_T11 -in_fitter]/1000.0]
+	set phase_step_ps [expr (22.5/360.0)*$period]
+	set delay_180_ps [expr 0.5*$period]
+	set delay_gap [max 0 [expr $delay_180_ps - (3*$phase_step_ps + $t11_max_delay_pvt_min)]]
+
+	set setup_slack [expr $setup_slack - $delay_gap]
+	set hold_slack  [expr $hold_slack  - $delay_gap]	
+
 	##############################
 	# Quantization error
 	##############################

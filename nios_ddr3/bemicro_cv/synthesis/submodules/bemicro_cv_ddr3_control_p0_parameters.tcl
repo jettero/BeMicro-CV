@@ -12,7 +12,7 @@ set ::GLOBAL_bemicro_cv_ddr3_control_p0_dqs_group_size 8
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_number_of_ck_pins 1
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_number_of_dm_pins 2
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_dqs_delay_chain_length 2
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_uniphy_temp_ver_code 458439994
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_uniphy_temp_ver_code 1192211107
 # PLL Parameters
 
 #USER W A R N I N G !
@@ -22,49 +22,55 @@ set ::GLOBAL_bemicro_cv_ddr3_control_p0_uniphy_temp_ver_code 458439994
 #USER any changes to the PLL component using the MegaWizard Plug-In,
 #USER apply those changes to the PLL parameters in this file
 
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_num_pll_clock 7
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(0) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(0) 1000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_num_pll_clock 8
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(0) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(0) 2000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(0) 0.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_AFI_CLK) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_AFI_CLK) 1000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_AFI_CLK) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_AFI_CLK) 2000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(PLL_AFI_CLK) 0.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(1) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(1) 1000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(1) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(1) 2000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(1) 0.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_MEM_CLK) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_MEM_CLK) 1000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_MEM_CLK) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_MEM_CLK) 2000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(PLL_MEM_CLK) 0.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(2) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(2) 1000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(2) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(2) 2000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(2) 270.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_WRITE_CLK) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_WRITE_CLK) 1000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_WRITE_CLK) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_WRITE_CLK) 2000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(PLL_WRITE_CLK) 270.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(3) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(3) 1000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(3) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(3) 2000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(3) 270.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_ADDR_CMD_CLK) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_ADDR_CMD_CLK) 1000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_ADDR_CMD_CLK) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_ADDR_CMD_CLK) 2000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(PLL_ADDR_CMD_CLK) 270.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(4) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(4) 2000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(4) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(4) 4000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(4) 0.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_AFI_HALF_CLK) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_AFI_HALF_CLK) 2000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_AFI_HALF_CLK) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_AFI_HALF_CLK) 4000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(PLL_AFI_HALF_CLK) 0.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(5) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(5) 5000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(5) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(5) 10000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(5) 9.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_NIOS_CLK) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_NIOS_CLK) 5000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_NIOS_CLK) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_NIOS_CLK) 10000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(PLL_NIOS_CLK) 9.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(6) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(6) 15000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(6) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(6) 30000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(6) 0.0
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_CONFIG_CLK) 6000000
-set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_CONFIG_CLK) 15000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_CONFIG_CLK) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_CONFIG_CLK) 30000000
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(PLL_CONFIG_CLK) 0.0
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(7) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(7) 1000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(7) 0.0
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_mult(PLL_DR_CLK) 12000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_div(PLL_DR_CLK) 1000000
+set ::GLOBAL_bemicro_cv_ddr3_control_p0_pll_phase(PLL_DR_CLK) 0.0
 
 set ::GLOBAL_bemicro_cv_ddr3_control_p0_leveling_capture_phase 90.0
 

@@ -1,4 +1,4 @@
-// (C) 2001-2013 Altera Corporation. All rights reserved.
+// (C) 2001-2014 Altera Corporation. All rights reserved.
 // Your use of Altera Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
 // files any of the foregoing (including device programming or simulation 
@@ -22,7 +22,8 @@ module sequencer_scc_acv_wrapper
     IO_SDATA_BITS           =   11,
     DQS_SDATA_BITS          =   46,
     AVL_DATA_WIDTH          =   32,
-    DLL_DELAY_CHAIN_LENGTH  =   6
+    DLL_DELAY_CHAIN_LENGTH  =   6,
+    USE_2X_DLL              =   "false"
         
     )
     (
@@ -70,7 +71,8 @@ module sequencer_scc_acv_wrapper
 	
 	sequencer_scc_acv_phase_decode  # (
 		.AVL_DATA_WIDTH         (DATAWIDTH         ),
-		.DLL_DELAY_CHAIN_LENGTH (DLL_DELAY_CHAIN_LENGTH )
+		.DLL_DELAY_CHAIN_LENGTH (DLL_DELAY_CHAIN_LENGTH ),
+		.USE_2X_DLL             (USE_2X_DLL)
 	) sequencer_scc_phase_decode_dqe_inst (
 		.avl_writedata          ((scc_dataout >> setting_offsets[SCC_ADDR_DQS_EN_PHASE]) & setting_masks[SCC_ADDR_DQS_EN_PHASE]),
 		.dqse_phase             (dqse_phase             )

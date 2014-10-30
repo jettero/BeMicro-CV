@@ -1,4 +1,4 @@
-// (C) 2001-2013 Altera Corporation. All rights reserved.
+// (C) 2001-2014 Altera Corporation. All rights reserved.
 // Your use of Altera Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
 // files any of the foregoing (including device programming or simulation 
@@ -67,10 +67,13 @@ module sequencer_scc_mgr (
 	
 	parameter DLL_DELAY_CHAIN_LENGTH        = 8;
 	parameter FAMILY                        = "STRATIXIII";
+	parameter USE_2X_DLL			= "false";
 	parameter USE_DQS_TRACKING              = 0;
 	parameter USE_SHADOW_REGS               = 0;
 	parameter DUAL_WRITE_CLOCK              = 0;
 	
+	parameter TRK_PARALLEL_SCC_LOAD         = 0;
+	parameter SCC_DATA_WIDTH                = 1;
 
 	localparam MAX_FAMILY_NAME_LEN          = 30;
 
@@ -129,7 +132,7 @@ module sequencer_scc_mgr (
 	
 	input scc_clk;
 	input scc_reset_n;
-	output scc_data;
+	output [SCC_DATA_WIDTH - 1:0] scc_data;
 	output [MEM_IF_READ_DQS_WIDTH - 1:0] scc_dqs_ena;
 	output [MEM_IF_READ_DQS_WIDTH - 1:0] scc_dqs_io_ena;
 	output [MEM_IF_DQ_WIDTH - 1:0] scc_dq_ena;
@@ -149,7 +152,7 @@ module sequencer_scc_mgr (
 	reg [AVL_DATA_WIDTH - 1:0] avl_readdata;
 	reg avl_waitrequest;
 
-	reg scc_data;
+	reg [SCC_DATA_WIDTH - 1:0] scc_data;
 	reg [MEM_IF_READ_DQS_WIDTH - 1:0] scc_dqs_ena;
 	reg [MEM_IF_READ_DQS_WIDTH - 1:0] scc_dqs_io_ena;
 	reg [MEM_IF_DQ_WIDTH - 1:0] scc_dq_ena;
@@ -174,6 +177,24 @@ module sequencer_scc_mgr (
 	reg [DQS_SDATA_BITS - 1:0] scc_dqs_cfg;
 	reg [DQS_SDATA_BITS - 1:0] scc_dqs_cfg_curr;
 	reg [DQS_SDATA_BITS - 1:0] scc_dqs_cfg_next;
+	
+	logic avl_cmd_parallel_scan;
+	logic [RFILE_ADDR_WIDTH-1:0] parallel_rfile_addr;
+	logic avl_par_read;
+	logic avl_load_done;
+	logic avl_load_done_r;
+	logic avl_cmd_par_end;
+	
+	logic scc_load_done;
+	logic scc_load_done_r;
+	logic avl_par_read_r;
+	logic [RFILE_ADDR_WIDTH-1:0] parallel_group;
+	logic parallel_cfg_loaded;
+	logic [SCC_DATA_WIDTH - 1:0] scc_data_p;
+	logic [DQS_SDATA_BITS - 1:0] scc_dqs_cfg_curr_p [SCC_DATA_WIDTH - 1:0];
+	logic [DQS_SDATA_BITS - 1:0] scc_dqs_cfg_next_p [SCC_DATA_WIDTH - 1:0];
+	logic scc_parallel;
+	logic scc_parallel_r;
 	
 	// is scc manager selected?
 	
@@ -267,7 +288,7 @@ module sequencer_scc_mgr (
 	reg avl_init_req_r3;
 	reg avl_cal_req_r3;
 	
-	integer i;
+	integer i,j,k,l;
 	
 	assign sel_scc = 1'b1;
 	integer scan_offsets;
@@ -282,8 +303,9 @@ module sequencer_scc_mgr (
 	assign avl_cmd_rfile_addr = {'0, (avl_cmd_rfile_group_not_io ? 0 : MEM_IF_READ_DQS_WIDTH) + avl_address[5:0]};
 
 	assign avl_cmd_rank = (sel_scc && avl_cmd_section == 4'he && avl_address[4] == 1'b1);
+	assign avl_cmd_parallel_scan = (avl_write && avl_cmd_section == 4'he && avl_address[10] == 1'b1);
 	
-	assign avl_cmd_scan = (sel_scc && avl_cmd_section == 4'he && ~avl_cmd_rank);
+	assign avl_cmd_scan = (sel_scc && avl_cmd_section == 4'he && ~avl_cmd_rank && ~avl_cmd_parallel_scan);
 	assign avl_cmd_scan_begin = (avl_read || avl_write) && avl_cmd_scan && ~(avl_doing_scan) && ~(avl_done);
 	assign avl_cmd_scan_end = avl_doing_scan && avl_done;
 	assign avl_cmd_scan_addr = {'0, scan_offsets + ((avl_writedata[7:0] == 8'hFF) ? 0 : avl_writedata[5:0])};
@@ -300,8 +322,9 @@ module sequencer_scc_mgr (
 	assign track_opr_check = (avl_address[5:0] == 6'b111111) ? 1'b1 : 0; 
 	assign avl_cmd_counter_access = sel_scc && avl_cmd_section == 4'hF && !track_opr_check;
 	assign avl_cmd_afi_req = (sel_scc && avl_cmd_section == 4'hd);
+	
 
-	assign avl_waitrequest = (~avl_reset_n) || ((avl_read || avl_write) && ~avl_cmd_rfile_end && ~avl_cmd_scan_end && ~avl_cmd_trk_afi_end && ~avl_cmd_rank);
+	assign avl_waitrequest = (~avl_reset_n) || ((avl_read || avl_write) && ~avl_cmd_rfile_end && ~avl_cmd_scan_end && ~avl_cmd_trk_afi_end && ~avl_cmd_rank && ~avl_cmd_par_end);
 	always_comb begin
 		if (avl_cmd_rank) begin
 			avl_readdata[AVL_DATA_WIDTH - 1:MEM_NUMBER_OF_RANKS] = '0;
@@ -493,8 +516,49 @@ module sequencer_scc_mgr (
 			avl_doing_scan <= (avl_cmd_scan_begin || avl_doing_scan) && ~avl_done;
 		end
 	end
+	
+	always_ff @(posedge avl_clk or negedge avl_reset_n)
+	    begin
+	        if (!avl_reset_n)
+	            begin
+	                avl_cmd_par_end        <=    0;
+	                parallel_rfile_addr    <=    0;
+	                avl_par_read           <=    0;
+	                avl_load_done          <=    0;
+	                avl_load_done_r        <=    0;
+	            end
+	        else
+	            begin
+	                if (avl_cmd_parallel_scan && !avl_cmd_par_end && avl_done)
+	                    avl_cmd_par_end    <=    ~avl_cmd_par_end;
+	                else
+	                    avl_cmd_par_end    <=    0;
+	                
+	                avl_load_done          <=    scc_load_done;
+	                avl_load_done_r        <=    avl_load_done;
+	                
+	                if (avl_cmd_parallel_scan)
+	                    begin
+	                        if (parallel_rfile_addr < SCC_DATA_WIDTH && avl_par_read && avl_load_done_r)
+	                            parallel_rfile_addr <= parallel_rfile_addr + 1'b1;
+	                    end
+	                else
+	                    parallel_rfile_addr    <=    0;
+	                
+	                if (!avl_par_read)
+	                    begin
+	                        if (avl_cmd_parallel_scan && parallel_rfile_addr < SCC_DATA_WIDTH && !avl_load_done_r)
+	                            avl_par_read    <=    ~avl_par_read;
+	                    end
+	                else
+	                    begin
+	                        if (avl_load_done_r)
+	                            avl_par_read    <=    ~avl_par_read;
+	                    end
+	            end
+	    end
 
-	assign read_addr = avl_cmd_scan ? avl_cmd_scan_addr : avl_cmd_rfile_addr;
+	assign read_addr = avl_cmd_parallel_scan ? parallel_rfile_addr : (avl_cmd_scan ? avl_cmd_scan_addr : avl_cmd_rfile_addr);
 	assign write_addr = avl_cmd_rfile_addr;
 
 	assign datain = (dataout & (~setting_masks_lshift[avl_cmd_section])) | ((setting_masks[avl_cmd_section] & avl_writedata) << setting_offsets[avl_cmd_section]);
@@ -568,7 +632,7 @@ module sequencer_scc_mgr (
 	        else begin
 	            scc_dataout      <=    dataout;
 				scc_doing_scan   <=    avl_doing_scan;
-				scc_doing_scan_r <=    scc_doing_scan;
+				scc_doing_scan_r <=    scc_doing_scan || (avl_cmd_parallel_scan && parallel_cfg_loaded);
 			end
 	    end	        
 	
@@ -605,7 +669,8 @@ module sequencer_scc_mgr (
 				.IO_SDATA_BITS          (IO_SDATA_BITS          ),
 				.DQS_SDATA_BITS         (DQS_SDATA_BITS         ),
 				.AVL_DATA_WIDTH         (AVL_DATA_WIDTH         ),
-				.DLL_DELAY_CHAIN_LENGTH (DLL_DELAY_CHAIN_LENGTH )
+				.DLL_DELAY_CHAIN_LENGTH (DLL_DELAY_CHAIN_LENGTH ),
+				.USE_2X_DLL		(USE_2X_DLL)
 			) sequencer_scc_family_wrapper (
 				.reset_n_scc_clk    (scc_reset_n        ),	
 				.scc_clk            (scc_clk            ),
@@ -656,6 +721,8 @@ module sequencer_scc_mgr (
 			scc_shift_cnt_curr <= '0;
 			scc_state_curr <= STATE_SCC_IDLE;
 			scc_group_counter <= '0;
+			for (k=0; k<SCC_DATA_WIDTH; k=k+1)
+			    scc_dqs_cfg_curr_p[k] <= '0;
 		end
 		else begin
 			scc_go_ena <= avl_address[3:0];
@@ -666,6 +733,13 @@ module sequencer_scc_mgr (
 			scc_shift_cnt_curr <= scc_shift_cnt_next;
 			scc_state_curr <= scc_state_next;
 			scc_group_counter <= group_counter;
+			if (scc_load_done && !scc_load_done_r)
+			    scc_dqs_cfg_curr_p[parallel_group] <= scc_dqs_cfg;
+			else if (scc_state_curr == STATE_SCC_LOAD)
+			    begin
+			        for (k=0; k<SCC_DATA_WIDTH; k=k+1)
+			            scc_dqs_cfg_curr_p[k]    <=    scc_dqs_cfg_next_p[k];
+			    end
 		end
 	end
 
@@ -673,14 +747,71 @@ module sequencer_scc_mgr (
 	assign scc_go_io = (scc_go_ena_r == SCC_SCAN_DQS_IO) || (scc_go_ena_r == SCC_SCAN_DQ_IO) || (scc_go_ena_r == SCC_SCAN_DM_IO);
 	assign scc_go_update = (scc_go_ena_r == SCC_SCAN_UPD);
 
+	always_ff @ (posedge scc_clk or negedge scc_reset_n)
+	    begin
+	        if (!scc_reset_n)
+	            begin
+	                avl_par_read_r   <=    0;
+	                scc_load_done    <=    0;
+	                scc_load_done_r  <=    0;
+	                parallel_group   <=    0;
+	                parallel_cfg_loaded    <=    0;
+	            end
+	        else
+	            begin
+	                avl_par_read_r    <=    avl_par_read;
+	                scc_load_done_r   <=    scc_load_done;
+	                
+	                if (!parallel_cfg_loaded)
+	                    begin
+	                        if (!scc_load_done && scc_load_done_r)
+	                            begin
+	                                if (parallel_group == SCC_DATA_WIDTH-1)
+	                                    parallel_cfg_loaded    <=    1;
+	                            end
+	                    end
+	                else
+	                    parallel_cfg_loaded    <=    0;
+	                
+	                if (!scc_load_done && scc_load_done_r)
+	                    begin
+	                        if (parallel_group < SCC_DATA_WIDTH-1)
+	                            parallel_group    <=    parallel_group + 1'b1;
+	                        else
+	                            parallel_group    <=    0;
+	                    end
+	                
+	                    scc_load_done    <=    avl_par_read_r;
+	            end
+	    end
+	
+	always_ff @ (negedge scc_clk or negedge scc_reset_n)
+	    begin
+	        if (!scc_reset_n)
+	            begin
+	                scc_parallel    <=    0;
+	                scc_parallel_r  <=    0;
+	            end
+	        else
+	            begin
+	                scc_parallel    <=    avl_cmd_parallel_scan;
+	                scc_parallel_r  <=    scc_parallel;
+	            end
+	    end
 
 	always_ff @ (negedge scc_clk) begin
-		scc_data <= scc_data_c;
+	    if (scc_parallel_r)
+	        scc_data <= scc_data_p;
+	    else
+	        for (l=0; l<SCC_DATA_WIDTH; l=l+1)
+	        begin
+	            scc_data[l] <= scc_data_c;
+	        end
 		scc_dqs_ena <= scc_dqs_ena_c;
 		scc_dqs_io_ena <= scc_dqs_io_ena_c;
 		scc_dq_ena <= scc_dq_ena_c;
 		scc_dm_ena <= scc_dm_ena_c;
-		scc_upd <= scc_upd_c;	
+		scc_upd <= scc_upd_c;
 	end
 
 	always_comb begin
@@ -723,6 +854,9 @@ module sequencer_scc_mgr (
 		scc_dm_ena_c = '0;
 		scc_upd_c = '0;
 		scc_done = 0;
+		scc_data_p = '0;
+		for (j=0; j<SCC_DATA_WIDTH; j=j+1)
+		    scc_dqs_cfg_next_p[j] = '0;
 
 		case (scc_state_curr)
 		STATE_SCC_IDLE: begin
@@ -757,11 +891,23 @@ module sequencer_scc_mgr (
 				begin		
 					scc_data_c = scc_dqs_cfg_curr[0];
 					scc_dqs_cfg_next = scc_dqs_cfg_curr >> 1;
+					
+					for (j=0; j<SCC_DATA_WIDTH; j=j+1)
+					begin
+					    scc_data_p[j] = scc_dqs_cfg_curr_p[j][0];
+					    scc_dqs_cfg_next_p[j] = scc_dqs_cfg_curr_p[j] >> 1;
+					end
 				end
 				else
 				begin
 					scc_data_c = scc_dqs_cfg_curr[DQS_SDATA_BITS - 1];
 					scc_dqs_cfg_next = scc_dqs_cfg_curr << 1;
+					
+					for (j=0; j<SCC_DATA_WIDTH; j=j+1)
+					begin
+					    scc_data_p[j] = scc_dqs_cfg_curr_p[j][DQS_SDATA_BITS - 1];
+					    scc_dqs_cfg_next_p[j] = scc_dqs_cfg_curr_p[j] << 1;
+					end
 				end
 			end
 			

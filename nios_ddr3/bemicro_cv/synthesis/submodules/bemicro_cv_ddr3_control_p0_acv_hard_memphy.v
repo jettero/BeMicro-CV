@@ -1,4 +1,4 @@
-// (C) 2001-2013 Altera Corporation. All rights reserved.
+// (C) 2001-2014 Altera Corporation. All rights reserved.
 // Your use of Altera Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
 // files any of the foregoing (including device programming or simulation 
@@ -135,6 +135,8 @@ module bemicro_cv_ddr3_control_p0_acv_hard_memphy (
 	pll_avl_phy_clk,
 	pll_write_clk,
 	pll_write_clk_pre_phy_clk,
+	pll_dr_clk,
+	pll_dr_clk_pre_phy_clk,
 	pll_dqs_ena_clk,
 	seq_clk,                    
 	pll_avl_clk,
@@ -368,6 +370,8 @@ input  pll_dqs_ena_clk;
 input  seq_clk;
 input  pll_avl_clk;
 input  pll_config_clk;
+input	pll_dr_clk;		// clocks 2X FF in I/O periphery
+input	pll_dr_clk_pre_phy_clk;
 input pll_mem_phy_clk;
 input pll_afi_phy_clk;
 input pll_avl_phy_clk;
@@ -527,8 +531,7 @@ endgenerate
 assign phy_clk = seq_clk;
 assign phy_reset_n = reset_n_seq_clk;  
 
-
-assign dll_clk = pll_write_clk_pre_phy_clk;
+assign dll_clk = pll_dr_clk_pre_phy_clk;
 
 assign dll_pll_locked = pll_locked;
 
@@ -676,6 +679,7 @@ assign afi_reset_n = reset_n_afi_clk;
 	);
 	defparam hphy_inst.hphy_ac_ddr_disable = "true";  
 	defparam hphy_inst.hphy_datapath_delay = "one_cycle";
+	defparam hphy_inst.hphy_datapath_ac_delay = "one_and_half_cycles";
 	defparam hphy_inst.hphy_reset_delay_en = "false";  
 	defparam hphy_inst.m_hphy_ac_rom_init_file = AC_ROM_INIT_FILE_NAME;
 	defparam hphy_inst.m_hphy_inst_rom_init_file = INST_ROM_INIT_FILE_NAME;

@@ -1,4 +1,4 @@
-// (C) 2001-2013 Altera Corporation. All rights reserved.
+// (C) 2001-2014 Altera Corporation. All rights reserved.
 // Your use of Altera Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
 // files any of the foregoing (including device programming or simulation 
@@ -17,7 +17,7 @@
 
 `timescale 1 ps / 1 ps
 
-(* altera_attribute = "-name IP_TOOL_NAME common; -name IP_TOOL_VERSION 13.0; -name FITTER_ADJUST_HC_SHORT_PATH_GUARDBAND 100; -name ALLOW_SYNCH_CTRL_USAGE OFF; -name AUTO_CLOCK_ENABLE_RECOGNITION OFF; -name AUTO_SHIFT_REGISTER_RECOGNITION OFF" *)
+(* altera_attribute = "-name IP_TOOL_NAME common; -name IP_TOOL_VERSION 14.0; -name FITTER_ADJUST_HC_SHORT_PATH_GUARDBAND 100; -name ALLOW_SYNCH_CTRL_USAGE OFF; -name AUTO_CLOCK_ENABLE_RECOGNITION OFF; -name AUTO_SHIFT_REGISTER_RECOGNITION OFF" *)
 
 
 module bemicro_cv_ddr3_control_pll0 (
@@ -27,6 +27,8 @@ module bemicro_cv_ddr3_control_pll0 (
 	pll_write_clk,
 	pll_write_clk_pre_phy_clk,
 	pll_addr_cmd_clk,
+	pll_dr_clk,
+	pll_dr_clk_pre_phy_clk,
 	pll_avl_clk,
 	pll_config_clk,
 	pll_locked,
@@ -67,19 +69,19 @@ parameter PLL_CONFIG_CLK_FREQ_STR = "20.0 MHz";
 parameter PLL_P2C_READ_CLK_FREQ_STR = "";
 parameter PLL_C2P_WRITE_CLK_FREQ_STR = "";
 parameter PLL_HR_CLK_FREQ_STR = "";
-parameter PLL_DR_CLK_FREQ_STR = "";
+parameter PLL_DR_CLK_FREQ_STR = "600.0 MHz";
 
-parameter PLL_AFI_CLK_FREQ_SIM_STR = "3334 ps";
-parameter PLL_MEM_CLK_FREQ_SIM_STR = "3334 ps";
-parameter PLL_WRITE_CLK_FREQ_SIM_STR = "3334 ps";
-parameter PLL_ADDR_CMD_CLK_FREQ_SIM_STR = "3334 ps";
-parameter PLL_AFI_HALF_CLK_FREQ_SIM_STR = "6668 ps";
-parameter PLL_NIOS_CLK_FREQ_SIM_STR = "16670 ps";
-parameter PLL_CONFIG_CLK_FREQ_SIM_STR = "50010 ps";
+parameter PLL_AFI_CLK_FREQ_SIM_STR = "3332 ps";
+parameter PLL_MEM_CLK_FREQ_SIM_STR = "3332 ps";
+parameter PLL_WRITE_CLK_FREQ_SIM_STR = "3332 ps";
+parameter PLL_ADDR_CMD_CLK_FREQ_SIM_STR = "3332 ps";
+parameter PLL_AFI_HALF_CLK_FREQ_SIM_STR = "6664 ps";
+parameter PLL_NIOS_CLK_FREQ_SIM_STR = "16660 ps";
+parameter PLL_CONFIG_CLK_FREQ_SIM_STR = "49980 ps";
 parameter PLL_P2C_READ_CLK_FREQ_SIM_STR = "0 ps";
 parameter PLL_C2P_WRITE_CLK_FREQ_SIM_STR = "0 ps";
 parameter PLL_HR_CLK_FREQ_SIM_STR = "0 ps";
-parameter PLL_DR_CLK_FREQ_SIM_STR = "0 ps";
+parameter PLL_DR_CLK_FREQ_SIM_STR = "1666 ps";
 
 parameter AFI_CLK_PHASE      = "0 ps";
 parameter AFI_PHY_CLK_PHASE  = "0 ps";
@@ -89,6 +91,7 @@ parameter ADDR_CMD_CLK_PHASE = "2500 ps";
 parameter AFI_HALF_CLK_PHASE = "0 ps";
 parameter AVL_CLK_PHASE      = "416 ps";
 parameter CONFIG_CLK_PHASE   = "0 ps";
+parameter DR_CLK_PHASE       = "0 ps";
 
 parameter MEM_CLK_PHASE_SIM       = "0 ps";
 parameter WRITE_CLK_PHASE_SIM     = "2500 ps";
@@ -123,12 +126,14 @@ localparam DR_CLK_FREQ        = SIM_FILESET ? PLL_DR_CLK_FREQ_SIM_STR : PLL_DR_C
 input	pll_ref_clk;		// PLL reference clock
 
 // When the PHY is selected to be a PLL/DLL MASTER, the PLL and DLL are instantied on this top level
-wire	pll_afi_clk;		// See pll_memphy instantiation below for detailed description of each clock
+wire	pll_afi_clk /* synthesis keep */;		// See pll_memphy instantiation below for detailed description of each clock
 
 output	pll_mem_clk;
 output	pll_write_clk;
 output	pll_write_clk_pre_phy_clk;
 output	pll_addr_cmd_clk;
+output pll_dr_clk;
+output pll_dr_clk_pre_phy_clk;
 output	pll_avl_clk;
 output	pll_config_clk;
 output	pll_locked;    // When 0, PLL is out of lock
@@ -430,12 +435,34 @@ initial $display("Using %0s pll emif simulation models", FAST_SIM_MODEL ? "Fast"
 		pll7.duty_cycle = 50;
 		
 		
+	generic_pll pll11 (
+		.refclk({pll_ref_clk}),
+		.rst(~global_reset_n),
+		.fbclk(fbout),
+		.outclk(pll_dr_clk_pre_phy_clk),
+		.fboutclk(),
+		.locked(),
+		.writerefclkdata(),
+    .writeoutclkdata(),
+    .writephaseshiftdata(), 
+		.writedutycycledata(),
+		.readrefclkdata(),
+    .readoutclkdata(),
+    .readphaseshiftdata(),
+    .readdutycycledata()								
+	);	
+	defparam pll11.reference_clock_frequency = REF_CLK_FREQ,
+		pll11.output_clock_frequency = DR_CLK_FREQ,
+		pll11.phase_shift = DR_CLK_PHASE,
+		pll11.duty_cycle = 50;	
 
 
 `ifndef SIMGEN		
 	assign pll_write_clk = pll_write_clk_pre_phy_clk;
+	assign pll_dr_clk = pll_dr_clk_pre_phy_clk;
 `else 
 	assign pll_write_clk = pll_write_clk_pre_phy_clk;
+	assign pll_dr_clk = pll_dr_clk_pre_phy_clk;
 `endif 
 
 

@@ -1,4 +1,4 @@
-// (C) 2001-2013 Altera Corporation. All rights reserved.
+// (C) 2001-2014 Altera Corporation. All rights reserved.
 // Your use of Altera Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
 // files any of the foregoing (including device programming or simulation 
@@ -18,7 +18,8 @@ module sequencer_scc_acv_phase_decode
 	# (parameter
     
 	AVL_DATA_WIDTH          =   32,
-	DLL_DELAY_CHAIN_LENGTH  =   8
+	DLL_DELAY_CHAIN_LENGTH  =   8,
+	USE_2X_DLL              =   "false"
         
 	)
 	(
@@ -37,7 +38,54 @@ module sequencer_scc_acv_phase_decode
 	output [3:0] dqse_phase;
 	reg [3:0] dqse_phase;
 
-	always @ (*) begin
+generate
+if (USE_2X_DLL == "true")
+begin
+	always @ (*) begin : decode_2x
+
+		dqse_phase = 4'b0111;
+
+		case (avl_writedata[2:0])
+		3'b000: 
+			begin
+				dqse_phase = 4'b0100;
+			end
+		3'b001: 
+			begin
+				dqse_phase = 4'b0101;
+			end
+		3'b010: 
+			begin
+				dqse_phase = 4'b0110;
+			end
+		3'b011: 
+			begin
+				dqse_phase = 4'b0111;
+			end
+		3'b100: 
+			begin
+				dqse_phase = 4'b1000;
+			end
+		3'b101: 
+			begin
+				dqse_phase = 4'b1001;
+			end
+		3'b110: 
+			begin
+				dqse_phase = 4'b1010;
+			end
+		3'b111: 
+			begin
+				dqse_phase = 4'b1011;
+			end
+		default : begin end
+		endcase
+	end
+
+end
+else
+begin
+	always @ (*) begin : decode
 
 		// DQSE = 270
 		dqse_phase = 4'b0110;
@@ -78,5 +126,7 @@ module sequencer_scc_acv_phase_decode
 		default : begin end
 		endcase
 	end
+end
+endgenerate
 
 endmodule

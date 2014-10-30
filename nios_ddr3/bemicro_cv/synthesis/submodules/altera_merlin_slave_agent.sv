@@ -1,4 +1,4 @@
-// (C) 2001-2013 Altera Corporation. All rights reserved.
+// (C) 2001-2014 Altera Corporation. All rights reserved.
 // Your use of Altera Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
 // files any of the foregoing (including device programming or simulation 
@@ -24,10 +24,10 @@
 // agreement for further details.
 
 
-// $Id: //acds/rel/13.0sp1/ip/merlin/altera_merlin_slave_agent/altera_merlin_slave_agent.sv#1 $
-// $Revision: #1 $
-// $Date: 2013/03/07 $
-// $Author: swbranch $
+// $Id: //acds/rel/14.0/ip/merlin/altera_merlin_slave_agent/altera_merlin_slave_agent.sv#2 $
+// $Revision: #2 $
+// $Date: 2014/02/20 $
+// $Author: ccching $
 
 `timescale 1 ns / 1 ns
 
@@ -61,7 +61,9 @@ module altera_merlin_slave_agent
     parameter PKT_RESPONSE_STATUS_L = 88,
     parameter PKT_BURST_SIZE_H = 92,
     parameter PKT_BURST_SIZE_L = 90,
-    parameter ST_DATA_W        = 93,
+	parameter PKT_ORI_BURST_SIZE_L = 93,
+    parameter PKT_ORI_BURST_SIZE_H = 95,
+    parameter ST_DATA_W        = 96,
     parameter ST_CHANNEL_W     = 32,
 
     // Slave parameters
@@ -178,6 +180,8 @@ module altera_merlin_slave_agent
     localparam BURSTWRAP_W  = PKT_BURSTWRAP_H - PKT_BURSTWRAP_L + 1;
     localparam BURSTSIZE_W  = PKT_BURST_SIZE_H - PKT_BURST_SIZE_L + 1;
     localparam BITS_TO_MASK = log2ceil(PKT_SYMBOLS);
+    localparam MAX_BURST    = 1 << (AVS_BURSTCOUNT_W - 1);
+    localparam BURSTING     = (MAX_BURST > PKT_SYMBOLS);
    
     // ------------------------------------------------
     // Signals
@@ -196,7 +200,10 @@ module altera_merlin_slave_agent
     wire [BURSTSIZE_W-1:0] cmd_burstsize;
     wire                   cmd_debugaccess;
    
+    wire                   suppress_cmd;
     wire                   byteen_asserted;
+    wire                   suppress_read;
+    wire                   suppress_write;
     wire                   needs_response_synthesis;
     wire                   generate_response;
 
@@ -256,7 +263,7 @@ module altera_merlin_slave_agent
             // ---------------------------------------------------
 
             assign ready_for_command = rf_source_ready;
-            assign cp_ready = (~m0_waitrequest | ~byteen_asserted) && ready_for_command;
+            assign cp_ready = (~m0_waitrequest | suppress_cmd) && ready_for_command;
 
         end else begin : no_prevent_fifo_overflow
 
@@ -264,15 +271,25 @@ module altera_merlin_slave_agent
             // not be able to waitrequest
             assign ready_for_command = 1'b1;
             // Backpressure only if the slave says to.
-            assign cp_ready = ~m0_waitrequest | ~byteen_asserted;
+            assign cp_ready = ~m0_waitrequest | suppress_cmd;
 
         end
     endgenerate
 
-    generate if (SUPPRESS_0_BYTEEN_CMD) begin : suppress_0_byteen_cmd
-        assign byteen_asserted = |cmd_byteen;
+    generate if (SUPPRESS_0_BYTEEN_CMD && !BURSTING) begin : suppress_0_byteen_cmd_non_bursting
+        assign byteen_asserted  = |cmd_byteen;
+        assign suppress_read    = ~byteen_asserted;
+        assign suppress_write   = ~byteen_asserted;
+        assign suppress_cmd     = ~byteen_asserted;
+    end else if (SUPPRESS_0_BYTEEN_CMD && BURSTING) begin: suppress_0_byteen_cmd_bursting
+        assign byteen_asserted  = |cmd_byteen;
+        assign suppress_read    = ~byteen_asserted;
+        assign suppress_write   = 1'b0;
+        assign suppress_cmd     = ~byteen_asserted && cmd_read;
     end else begin : no_suppress_0_byteen_cmd
-        assign byteen_asserted = 1'b1;
+        assign suppress_read    = 1'b0;
+        assign suppress_write   = 1'b0;
+        assign suppress_cmd     = 1'b0;
     end
     endgenerate
 
@@ -318,7 +335,7 @@ module altera_merlin_slave_agent
     // responsible for driving burstcount to 1 on each beat of an uncompressed
     // read burst.
    
-    assign m0_read = ready_for_command & byteen_asserted &
+    assign m0_read = ready_for_command & !suppress_read &
       (local_compressed_read | local_read);
    
     generate 
@@ -340,12 +357,11 @@ module altera_merlin_slave_agent
         end 
     endgenerate
    
-    assign m0_write = ready_for_command & local_write & byteen_asserted;
+    assign m0_write = ready_for_command & local_write & !suppress_write;
     assign m0_lock  = ready_for_command & local_lock & (m0_read | m0_write);
 	assign m0_debugaccess  = cmd_debugaccess;
 	// For now, to support write response 
-	assign m0_writeresponserequest  = ready_for_command & local_write & byteen_asserted & !cmd_posted;
-    //assign m0_writeresponserequest  = '0;
+	assign m0_writeresponserequest  = ready_for_command & local_write & !suppress_write & !cmd_posted;
     
     // -------------------------------------------------------------------
     // Indirection layer for response packet values.  Some may always wire
@@ -373,7 +389,7 @@ module altera_merlin_slave_agent
     // generates the correct number of responses.
     // ------------------------------------------------------------------
 	// When the slave can return the response, let it does its works. Dont generate sysnthesis response
-    assign needs_response_synthesis = ((local_read | local_compressed_read) & !byteen_asserted) | (nonposted_write_endofpacket && !USE_WRITERESPONSE);
+    assign needs_response_synthesis = ((local_read | local_compressed_read) & suppress_read) | (nonposted_write_endofpacket && !USE_WRITERESPONSE);
 
     // Avalon-ST interfaces to external response fifo:
 	// tgngo:Currently, with "generate response synthesis", only one write command is allowed to write in at eop of non-posted write
@@ -425,7 +441,7 @@ module altera_merlin_slave_agent
 	// at this time, the final response merged will send out, and rp_valid is only asserted
 	// for one response for whole burst
 	generate
-	if (USE_READRESPONSE & USE_WRITERESPONSE) begin
+	if (USE_WRITERESPONSE) begin
 		wire last_write_response = rf_sink_data[PKT_TRANS_WRITE] & !rf_sink_data[PKT_TRANS_POSTED] & rf_sink_endofpacket;
 		always @* begin
 			if (rf_sink_data[PKT_TRANS_WRITE] == 1) 
@@ -442,11 +458,12 @@ module altera_merlin_slave_agent
 	// ------------------------------------------------------------------
     // Response merging
     // ------------------------------------------------------------------
-	wire [1:0] current_response = rdata_fifo_sink_data[AVS_DATA_W+1:AVS_DATA_W];
+
+    reg [1:0] current_response;
 	reg [1:0] response_merged;
 	generate
 	begin: response_merging
-	if (USE_READRESPONSE & USE_WRITERESPONSE) begin
+	if (USE_WRITERESPONSE) begin
 		reg first_write_response;
 		reg reset_merged_output;
 		reg [1:0] previous_response_in;
@@ -466,6 +483,7 @@ module altera_merlin_slave_agent
 		end
 	
 		always_comb begin
+            current_response = rdata_fifo_sink_data[AVS_DATA_W+1:AVS_DATA_W];
 			reset_merged_output = first_write_response && rdata_fifo_sink_valid;
 			previous_response_in = reset_merged_output ? current_response : previous_response;
 			response_merged = current_response >= previous_response ? current_response: previous_response_in;
@@ -483,6 +501,7 @@ module altera_merlin_slave_agent
 		end
 	end else begin
         always @* begin
+            current_response = generate_response ? 2'b00: rdata_fifo_sink_data[AVS_DATA_W+1:AVS_DATA_W];
 		    response_merged = current_response;
         end
 	end
@@ -536,6 +555,8 @@ module altera_merlin_slave_agent
         //rp_data[PKT_RESPONSE_STATUS_H:PKT_RESPONSE_STATUS_L]  = {RESPONSE_W{ 1'b0 }};
 		rp_data[PKT_RESPONSE_STATUS_H:PKT_RESPONSE_STATUS_L]  = response_merged;
 		rp_data[PKT_BURST_SIZE_H:PKT_BURST_SIZE_L]            = uncompressor_burstsize;
+		// bounce the original size back to the master untouch
+		rp_data[PKT_ORI_BURST_SIZE_H:PKT_ORI_BURST_SIZE_L]    = rf_sink_data[PKT_ORI_BURST_SIZE_H:PKT_ORI_BURST_SIZE_L];
     end
 
     // ------------------------------------------------------------------
@@ -547,7 +568,8 @@ module altera_merlin_slave_agent
         .ADDR_W               (ADDR_W),
         .BURSTWRAP_W          (BURSTWRAP_W),
         .BYTE_CNT_W           (BYTE_CNT_W),
-        .PKT_SYMBOLS          (PKT_SYMBOLS)
+        .PKT_SYMBOLS          (PKT_SYMBOLS),
+        .BURST_SIZE_W         (BURSTSIZE_W)
     ) uncompressor
     (
         .clk                  (clk),
