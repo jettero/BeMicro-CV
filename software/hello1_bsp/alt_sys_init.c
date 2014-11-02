@@ -1,8 +1,8 @@
 /*
  * alt_sys_init.c - HAL initialization source
  *
- * Machine generated for CPU 'nios_cpu' in SOPC Builder design 'test-1'
- * SOPC Builder design path: ../../test-1.sopcinfo
+ * Machine generated for CPU 'nios_cpu' in SOPC Builder design 'test1'
+ * SOPC Builder design path: ../../test1.sopcinfo
  *
  * Generated: Sun Nov 02 14:27:55 EST 2014
  */

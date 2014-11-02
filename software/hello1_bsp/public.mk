@@ -87,7 +87,7 @@ ACDS_VERSION := 14.0
 
 # Qsys--generated SOPCINFO file. Required for resolving node instance ID's with 
 # design component names. 
-SOPCINFO_FILE := $(ABS_BSP_ROOT_DIR)/../../test-1.sopcinfo
+SOPCINFO_FILE := $(ABS_BSP_ROOT_DIR)/../../test1.sopcinfo
 
 # Big-Endian operation. 
 # setting BIG_ENDIAN is false
@@ -134,8 +134,8 @@ QSYS := 1
 ELF_PATCH_FLAG += --qsys true
 
 # Design Name 
-# setting SOPC_NAME is test-1
-SOPC_NAME := test-1
+# setting SOPC_NAME is test1
+SOPC_NAME := test1
 
 # SopcBuilder Simulation Enabled 
 # setting SOPC_SIMULATION_ENABLED is false

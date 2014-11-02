@@ -4,9 +4,9 @@
         <BspVersion>default</BspVersion>
         <BspGeneratedTimeStamp>Nov 2, 2014 2:27:55 PM</BspGeneratedTimeStamp>
         <BspGeneratedUnixTimeStamp>1414956475369</BspGeneratedUnixTimeStamp>
-        <BspGeneratedLocation>/home/jettero/code/fpga/test-1/software/hello1_bsp</BspGeneratedLocation>
+        <BspGeneratedLocation>/home/jettero/code/fpga/test1/software/hello1_bsp</BspGeneratedLocation>
         <BspSettingsFile>./settings.bsp</BspSettingsFile>
-        <SopcDesignFile>../../test-1.sopcinfo</SopcDesignFile>
+        <SopcDesignFile>../../test1.sopcinfo</SopcDesignFile>
         <JdiFile>default</JdiFile>
         <Cpu>nios_cpu</Cpu>
         <SchemaVersion>1.9</SchemaVersion>

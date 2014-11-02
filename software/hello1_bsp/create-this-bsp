@@ -5,7 +5,7 @@
 BSP_TYPE=hal
 BSP_DIR=.
 SOPC_DIR=../../
-SOPC_FILE=../../test-1.sopcinfo
+SOPC_FILE=../../test1.sopcinfo
 NIOS2_BSP_ARGS=""
 CPU_NAME=
 

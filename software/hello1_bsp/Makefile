@@ -101,7 +101,7 @@ ACDS_VERSION := 14.0
 # BUILD_NUMBER: 200
 
 SETTINGS_FILE := settings.bsp
-SOPC_FILE := ../../test-1.sopcinfo
+SOPC_FILE := ../../test1.sopcinfo
 
 #-------------------------------------------------------------------------------
 #                             TOOL & COMMAND DEFINITIONS

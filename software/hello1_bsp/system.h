@@ -1,8 +1,8 @@
 /*
  * system.h - SOPC Builder system and BSP software package information
  *
- * Machine generated for CPU 'nios_cpu' in SOPC Builder design 'test-1'
- * SOPC Builder design path: ../../test-1.sopcinfo
+ * Machine generated for CPU 'nios_cpu' in SOPC Builder design 'test1'
+ * SOPC Builder design path: ../../test1.sopcinfo
  *
  * Generated: Sun Nov 02 14:27:55 EST 2014
  */
@@ -196,7 +196,7 @@
 #define ALT_STDOUT_IS_JTAG_UART
 #define ALT_STDOUT_PRESENT
 #define ALT_STDOUT_TYPE "altera_avalon_jtag_uart"
-#define ALT_SYSTEM_NAME "test-1"
+#define ALT_SYSTEM_NAME "test1"
 
 
 /*
