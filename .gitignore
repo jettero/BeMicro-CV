@@ -3,5 +3,5 @@
 .qsys_edit
 db
 output_files
-qsys
+test1
 incremental_db
