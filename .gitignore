@@ -1,3 +1,5 @@
-db
-.qsys_edit
 *.qws
+*.sopcinfo
+.qsys_edit
+db
+qsys
