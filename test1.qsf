@@ -39,7 +39,7 @@
 
 set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CEFA2F23C8
-set_global_assignment -name TOP_LEVEL_ENTITY "test1"
+set_global_assignment -name TOP_LEVEL_ENTITY test1_top
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 14.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "13:48:45  NOVEMBER 02, 2014"
 set_global_assignment -name LAST_QUARTUS_VERSION 14.0
@@ -47,13 +47,90 @@ set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 256
 set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (Verilog)"
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_instance_assignment -name D5_DELAY 4 -to MEM_DQS[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name D6_DELAY 0 -to MEM_DQS[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name D5_DELAY 4 -to MEM_DQS[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name D6_DELAY 0 -to MEM_DQS[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name D5_DELAY 4 -to MEM_DQS_N[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name D6_DELAY 0 -to MEM_DQS_N[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name D5_DELAY 4 -to MEM_DQS_N[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name D6_DELAY 0 -to MEM_DQS_N[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name D5_DELAY 2 -to MEM_CK[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name D5_DELAY 2 -to MEM_CK_N[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[2] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[3] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[4] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[5] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[6] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[7] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[8] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[9] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[10] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[11] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[12] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[13] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[14] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQ[15] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DM[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DM[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQS[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQS[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQS_N[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_DQS_N[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[10] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[11] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[12] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[2] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[3] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[4] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[5] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[6] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[7] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[8] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_A[9] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_BA[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_BA[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_BA[2] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_CAS_N[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_CKE[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_CS_N[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_ODT[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_RAS_N[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_WE_N[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_RESET_N -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_CK[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to MEM_CK_N[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL "DUAL-REGIONAL CLOCK" -to u0|ddr3_control|pll0|pll_avl_clk -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL "DUAL-REGIONAL CLOCK" -to u0|ddr3_control|pll0|pll_config_clk -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|ddr3_control|p0|umemphy|ureset|phy_reset_mem_stable_n -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|ddr3_control|p0|umemphy|ureset|phy_reset_n -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|ddr3_control|s0|sequencer_rw_mgr_inst|rw_mgr_inst|rw_mgr_core_inst|rw_soft_reset_n -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|ddr3_control|p0|umemphy|uio_pads|dq_ddio[0].read_capture_clk_buffer -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|ddr3_control|p0|umemphy|uread_datapath|reset_n_fifo_write_side[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|ddr3_control|p0|umemphy|uread_datapath|reset_n_fifo_wraddress[0] -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|ddr3_control|p0|umemphy|uio_pads|dq_ddio[1].read_capture_clk_buffer -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|ddr3_control|p0|umemphy|uread_datapath|reset_n_fifo_write_side[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|ddr3_control|p0|umemphy|uread_datapath|reset_n_fifo_wraddress[1] -tag __test1_ddr3_control_p0
+set_instance_assignment -name ENABLE_BENEFICIAL_SKEW_OPTIMIZATION_FOR_NON_GLOBAL_CLOCKS ON -to u0|ddr3_control -tag __test1_ddr3_control_p0
+set_instance_assignment -name PLL_COMPENSATION_MODE DIRECT -to u0|ddr3_control|pll0|fbout -tag __test1_ddr3_control_p0
+set_global_assignment -name USE_DLL_FREQUENCY_FOR_DQS_DELAY_CHAIN ON
+set_global_assignment -name UNIPHY_SEQUENCER_DQS_CONFIG_ENABLE ON
+set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING ON
+set_global_assignment -name ECO_REGENERATE_REPORT ON
 set_global_assignment -name QIP_FILE test1/synthesis/test1.qip
+set_global_assignment -name SDC_FILE test1.sdc
+set_global_assignment -name VHDL_FILE test1_top.vhd
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "2.5 V"
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 Huh?
 
 I'm just trying to figure out the Quartus and Nios tools.  It's new and foreign
@@ -19,3 +21,6 @@ This also generates C<test1.sopcinfo>, which is used by the eclipse nios tools.
 After qsys system generation, run the pin assignments script
 
  quartus_sh test1/synthesis/submodules/test1_ddr3_control_p0_pin_assignments.tcl
+
+(or select tools → tcl scripts → test1_ddr3_control_p0_pin_assignments.tcl
+→ [Run])

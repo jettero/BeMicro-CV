@@ -5,3 +5,9 @@ db
 output_files
 test1
 incremental_db
+test1_ddr3_control_s0
+c5_pin_model_dump.txt
+PLLJ_PLLSPE_INFO.txt
+test1_ddr3_control_p0_all_pins.txt
+test1_ddr3_control_s0_seq_ipd_report.txt
+test1_ddr3_control_p0_summary.csv
