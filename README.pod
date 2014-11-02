@@ -4,3 +4,18 @@ I'm just trying to figure out the Quartus and Nios tools.  It's new and foreign
 to me.  You're probably better off not copying me.  Go to the guy I forked this
 from.
 
+=head1 Notes
+
+Things I figured out or want to remember later.
+
+=head2 C<test1/>
+
+qsys generates the C<test1/> directory. Open qsys (test1.qsys) and "generate [Verilog] HDL"
+
+This also generates C<test1.sopcinfo>, which is used by the eclipse nios tools.
+
+=head2 test1_ddr3_control_p0_all_pins.txt
+
+After qsys system generation, run the pin assignments script
+
+ quartus_sh test1/synthesis/submodules/test1_ddr3_control_p0_pin_assignments.tcl
