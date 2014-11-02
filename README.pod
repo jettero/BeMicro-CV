@@ -1,4 +1,4 @@
-BeMicro-CV
-==========
+=head1 SUPZ
 
-A "hello world" style designs for the Cyclone V based $49 Arrow BeMicro CV
+I'm just trying to figure out the Quartus and Nios tools.  It's new and foreign to me.  You're probably better off not copying me.
+
