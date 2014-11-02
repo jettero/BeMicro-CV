@@ -1,4 +1,6 @@
-=head1 SUPZ
+=head1 Huh?
 
-I'm just trying to figure out the Quartus and Nios tools.  It's new and foreign to me.  You're probably better off not copying me.
+I'm just trying to figure out the Quartus and Nios tools.  It's new and foreign
+to me.  You're probably better off not copying me.  Go to the guy I forked this
+from.
 
