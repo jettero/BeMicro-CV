@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<pin_planner>
+	<pin_info>
+		<pin name="MEM_CK[0]" source="Assignments" diff_pair_node="MEM_CK_N[0]" >
+		</pin>
+		<pin name="MEM_CK_N[0]" source="Assignments" diff_pair_node="MEM_CK[0]" >
+		</pin>
+		<pin name="MEM_DQS[0]" source="Assignments" diff_pair_node="MEM_DQS_N[0]" >
+		</pin>
+		<pin name="MEM_DQS[1]" source="Assignments" diff_pair_node="MEM_DQS_N[1]" >
+		</pin>
+		<pin name="MEM_DQS_N[0]" source="Assignments" diff_pair_node="MEM_DQS[0]" >
+		</pin>
+		<pin name="MEM_DQS_N[1]" source="Assignments" diff_pair_node="MEM_DQS[1]" >
+		</pin>
+	</pin_info>
+	<buses>
+	</buses>
+	<group_file_association>
+	</group_file_association>
+	<pin_planner_file_specifies>
+	</pin_planner_file_specifies>
+</pin_planner>
